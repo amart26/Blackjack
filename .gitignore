@@ -1,2 +1,5 @@
+blackjack
 blackjack.exe
 *.o
+*.out
+lib/

@@ -1,10 +1,11 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <random>
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
+#include <algorithm>
+#include <iostream>
+#include <random>
+#include <string>
+#include <vector>
 
 enum class GameState
 {
@@ -60,7 +61,8 @@ void fillDeck(Deck &deck)
     {
         for (int j = 0; j < 13; j++)
         {
-            deck.cards.push_back(Card{static_cast<Suit>(i), static_cast<Rank>(j)});
+            deck.cards.push_back(
+                Card{static_cast<Suit>(i), static_cast<Rank>(j)});
         }
     }
 }
@@ -116,16 +118,16 @@ int calculateScore(const Hand &hand)
 int main()
 {
     SDL_Init(SDL_INIT_VIDEO);
-    TTF_Init(); 
+    TTF_Init();
     SDL_Log("SDL initialized successfully");
     SDL_Window *window = SDL_CreateWindow("Blackjack", 800, 600, 0);
     SDL_Log("Window created successfully");
     SDL_Renderer *renderer = SDL_CreateRenderer(window, nullptr);
     SDL_SetRenderVSync(renderer, 1);
-    TTF_Font* font = TTF_OpenFont("assets/fonts/OpenSans.ttf", 24); 
-    if(font == nullptr)
+    TTF_Font *font = TTF_OpenFont("assets/fonts/OpenSans.ttf", 24);
+    if (font == nullptr)
     {
-        SDL_Log("Font failed to laod: %s", SDL_GetError()); 
+        SDL_Log("Font failed to laod: %s", SDL_GetError());
     }
 
     Deck deck;
@@ -165,7 +167,8 @@ int main()
             float mouseX = event.button.x;
             float mouseY = event.button.y;
 
-            if (mouseX >= 300 && mouseX <= 380 && mouseY >= 500 && mouseY <= 540)
+            if (mouseX >= 300 && mouseX <= 380 && mouseY >= 500 &&
+                mouseY <= 540)
             {
                 std::cout << "HIT!\n";
                 dealCard(deck, playerHand);
@@ -186,15 +189,16 @@ int main()
                 }
             }
 
-            if (mouseX >= 420 && mouseX <= 500 && mouseY >= 500 && mouseY <= 540)
+            if (mouseX >= 420 && mouseX <= 500 && mouseY >= 500 &&
+                mouseY <= 540)
             {
                 std::cout << "STAND!, DEALERS TURN!\n";
                 gameState = GameState::DEALER_TURN;
             }
 
-            if (gameState == GameState::GAME_OVER)
+            if (gameState == GameState::GAME_OVER && mouseX >= 360 &&
+                mouseX <= 420 && mouseY >= 260 && mouseY <= 300)
             {
-
                 playerHand.cards.clear();
                 dealerHand.cards.clear();
                 deck.cards.clear();
@@ -294,7 +298,7 @@ int main()
         }
     }
 
-    TTF_CloseFont(font); 
-    TTF_Quit(); 
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_Quit();
 }
