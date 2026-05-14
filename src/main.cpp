@@ -55,7 +55,7 @@ struct Hand
     std::vector<Card> cards;
 };
 
-void fillDeck(Deck &deck)
+void fillDeck(Deck& deck)
 {
     for (int i = 0; i < 4; i++)
     {
@@ -67,20 +67,20 @@ void fillDeck(Deck &deck)
     }
 }
 
-void shuffleDeck(Deck &deck)
+void shuffleDeck(Deck& deck)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::shuffle(deck.cards.begin(), deck.cards.end(), gen);
 }
 
-void dealCard(Deck &deck, Hand &hand)
+void dealCard(Deck& deck, Hand& hand)
 {
     hand.cards.push_back(deck.cards.back());
     deck.cards.pop_back();
 }
 
-int calculateScore(const Hand &hand)
+int calculateScore(const Hand& hand)
 {
     int sum = 0;
     int aceCount = 0;
@@ -120,11 +120,11 @@ int main()
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     SDL_Log("SDL initialized successfully");
-    SDL_Window *window = SDL_CreateWindow("Blackjack", 800, 600, 0);
+    SDL_Window* window = SDL_CreateWindow("Blackjack", 800, 600, 0);
     SDL_Log("Window created successfully");
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, nullptr);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
     SDL_SetRenderVSync(renderer, 1);
-    TTF_Font *font = TTF_OpenFont("assets/fonts/OpenSans.ttf", 24);
+    TTF_Font* font = TTF_OpenFont("assets/fonts/OpenSans.ttf", 24);
     if (font == nullptr)
     {
         SDL_Log("Font failed to laod: %s", SDL_GetError());
@@ -225,6 +225,38 @@ int main()
 
         SDL_SetRenderDrawColorFloat(renderer, 0.13f, 0.33f, 0.13f, 1.0f);
         SDL_RenderClear(renderer);
+
+        // GLOBAL TEXT
+        float textW, textH;
+        SDL_Color white = {255, 255, 255, 255};
+
+        // PLAYER SCORE TEXT
+        std::string playerText = "Player " + std::to_string(playerScore);
+        SDL_Surface* playerSurface =
+            TTF_RenderText_Blended(font, playerText.c_str(), 0, white);
+        SDL_Texture* playerTexture =
+            SDL_CreateTextureFromSurface(renderer, playerSurface);
+
+        SDL_GetTextureSize(playerTexture, &textW, &textH);
+        SDL_FRect playerTextRect = {50, 400, textW, textH};
+        SDL_RenderTexture(renderer, playerTexture, nullptr, &playerTextRect);
+        SDL_DestroySurface(playerSurface);
+        SDL_DestroyTexture(playerTexture);
+
+        // DEALER SCORE TEXT
+        std::string dealerText = "Dealer: " + std::to_string(dealerScore);
+        SDL_Surface* dealerSurface =
+            TTF_RenderText_Blended(font, dealerText.c_str(), 0, white);
+        SDL_Texture* dealerTexture =
+            SDL_CreateTextureFromSurface(renderer, dealerSurface);
+        SDL_GetTextureSize(dealerTexture, &textW, &textH);
+        SDL_FRect dealerTextRect = {50, 100, textW, textH};
+        SDL_RenderTexture(renderer, dealerTexture, nullptr, &dealerTextRect);
+        SDL_DestroySurface(dealerSurface);
+        SDL_DestroyTexture(dealerTexture);
+
+
+        // BUTTONS
         SDL_FRect hitButton = {300, 500, 80, 40};
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(renderer, &hitButton);
