@@ -41,7 +41,6 @@ void renderHand(SDL_Renderer* renderer, const Hand& hand, float x, float y,
     {
         if (isCardHidden && i == hand.cards.size() - 1)
         {
-            SDL_Log("RENDERING card back");
             renderCardBack(renderer, cardBackTexture,
                            x + (i * (CARD_WIDTH + CARD_GAP) * scale), y, scale);
         }
