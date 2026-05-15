@@ -30,3 +30,6 @@ using SocketType = SOCKET;
 #include <sys/socket.h>
 using SocketType = int;
 #endif
+
+void sendMessage(SocketType socket, const Message& message);
+Message receiveMessage(SocketType socket);
