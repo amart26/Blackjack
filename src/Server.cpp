@@ -33,7 +33,7 @@ void Server::acceptPlayers()
 
         std::cout << "Player connected! Total Players: " << playerCount << "\n";
 
-        std::thread playerThread(handlePlayer, newSocket);
+        std::thread playerThread(handlePlayer, newSocket, playerCount - 1);
         playerThread.detach();
     }
 }
@@ -46,7 +46,45 @@ void Server::broadcastMessage(const Message& message)
     }
 }
 
-void handlePlayer(SocketType socket)
+void Server::startBettingPhase()
+{
+    Message waitingMessage;
+    waitingMessage.type = MessageType::WAITING;
+    waitingMessage.data = 0;
+    waitingMessage.playerId = 0;
+
+    std::cout << "Betting phase started\n";
+    broadcastMessage(waitingMessage);
+
+    playerBets.assign(playerCount, 0);
+}
+
+void Server::startGamePhase()
+{
+    std::cout << "Game phase has start.\n";
+    fillDeck(deck);
+    shuffleDeck(deck);
+
+    for (int i = 0; i < playerCount; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            dealCard(deck, playerHands[i]);
+        }
+    }
+
+    dealCard(deck, dealerHand);
+    dealCard(deck, dealerHand);
+    currentPlayerTurn = 0;
+
+    Message yourTurnMessage;
+    yourTurnMessage.type = MessageType::YOUR_TURN;
+    yourTurnMessage.data = 0;
+    yourTurnMessage.playerId = 0;
+    sendMessage(clientSockets[0], yourTurnMessage);
+}
+
+void handlePlayer(SocketType socket, int playerId)
 {
     while (true)
     {
