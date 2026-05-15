@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
 #include <algorithm>
@@ -115,6 +116,58 @@ int calculateScore(const Hand& hand)
     return sum;
 }
 
+SDL_FRect getCardSourceRect(const Card& card)
+{
+    int rankIndex = static_cast<int>(card.rank);
+    int column = rankIndex % 5;
+    int row = rankIndex / 5;
+    float x = column * 88;
+    float y = row * 124;
+    return SDL_FRect{x, y, 88, 124};
+}
+
+void renderCard(SDL_Renderer* renderer, SDL_Texture* texture, const Card& card,
+                float x, float y)
+{
+    SDL_FRect cardRect = getCardSourceRect(card);
+    SDL_FRect destRect = {x, y, 88, 124};
+    SDL_RenderTexture(renderer, texture, &cardRect, &destRect);
+}
+
+void renderHand(SDL_Renderer* renderer, const Hand& hand, float y,
+                SDL_Texture* heartsTexture, SDL_Texture* clubsTexture,
+                SDL_Texture* spadesTexture, SDL_Texture* diamondsTexture)
+{
+    for (int i = 0; i < hand.cards.size(); i++)
+    {
+
+        switch (hand.cards[i].suit)
+        {
+        case Suit::HEARTS:
+            renderCard(renderer, heartsTexture, hand.cards[i], 200 + (i * 100),
+                       y);
+            break;
+
+        case Suit::CLUBS:
+            renderCard(renderer, clubsTexture, hand.cards[i], 200 + (i * 100),
+                       y);
+            break;
+
+        case Suit::SPADES:
+            renderCard(renderer, spadesTexture, hand.cards[i], 200 + (i * 100),
+                       y);
+            break;
+        case Suit::DIAMONDS:
+            renderCard(renderer, diamondsTexture, hand.cards[i],
+                       200 + (i * 100), y);
+            break;
+
+        default:
+            break;
+        }
+    }
+}
+
 int main()
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -150,11 +203,38 @@ int main()
 
     std::cout << "Players score: " << playerScore << "\n";
     std::cout << "Dealers score " << dealerScore << "\n";
+
     bool running = true;
     bool isDealerDone = false;
     bool isPlayerBusted = false;
     bool isDealerBusted = false;
     bool isGameOverHandled = false;
+
+    SDL_Texture* heartsTexture =
+        IMG_LoadTexture(renderer, "assets/images/Hearts.png");
+    if (heartsTexture == nullptr)
+    {
+        SDL_Log("Failed to load hearts: %s", SDL_GetError());
+    }
+    SDL_Texture* clubsTexture =
+        IMG_LoadTexture(renderer, "assets/images/Clubs.png");
+    if (clubsTexture == nullptr)
+    {
+        SDL_Log("Failed to load clubs: %s", SDL_GetError());
+    }
+    SDL_Texture* diamondsTexture =
+        IMG_LoadTexture(renderer, "assets/images/Diamonds.png");
+    if (diamondsTexture == nullptr)
+    {
+        SDL_Log("Failed to load diamonds: %s", SDL_GetError());
+    }
+    SDL_Texture* spadesTexture =
+        IMG_LoadTexture(renderer, "assets/images/Spades.png");
+    if (spadesTexture == nullptr)
+    {
+        SDL_Log("Failed to load spades: %s", SDL_GetError());
+    }
+
     while (running)
     {
         SDL_Event event;
@@ -243,6 +323,12 @@ int main()
             SDL_SetRenderDrawColor(renderer, 250, 0, 0, 255);
             SDL_RenderFillRect(renderer, &playAgainButton);
         }
+
+        // CARDS
+        renderHand(renderer, playerHand, 350, heartsTexture, clubsTexture,
+                   spadesTexture, diamondsTexture);
+        renderHand(renderer, dealerHand, 50, heartsTexture, clubsTexture,
+                   spadesTexture, diamondsTexture);
 
         // GLOBAL TEXT
         float textW, textH;
