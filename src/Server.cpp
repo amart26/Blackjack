@@ -115,9 +115,10 @@ void Server::runDealerTurn()
     }
     if (dealerScore > 21)
     {
+        isDealerBusted = true;
         Message gameOverMessage;
         gameOverMessage.type = MessageType::GAME_OVER;
-        gameOverMessage.data = 0;
+        gameOverMessage.data = -1;
 
         broadcastMessage(gameOverMessage);
     }
@@ -128,6 +129,58 @@ void Server::runDealerTurn()
         gameOverMessage.data = 0;
 
         broadcastMessage(gameOverMessage);
+    }
+}
+
+void Server::calculatePayouts()
+{
+    Message resultsMessage;
+
+    for (int i = 0; i < playerCount; i++)
+    {
+        playerScore = calculateScore(playerHands[i]);
+
+        if (playerScore == 21 && playerHands[i].cards.size() == 2)
+        {
+            resultsMessage.type = MessageType::GAME_OVER;
+            resultsMessage.data = 2;
+            sendMessage(clientSockets[i], resultsMessage);
+        }
+        else if (playerScore > 21 && !isDealerBusted)
+        {
+
+            resultsMessage.type = MessageType::PLAYER_BUST;
+            resultsMessage.data = -1;
+            sendMessage(clientSockets[i], resultsMessage);
+        }
+        else if (playerScore > dealerScore &&
+                 calculateScore(playerHands[i]) <= 21)
+        {
+            resultsMessage.type = MessageType::GAME_OVER;
+            resultsMessage.data = 1;
+            sendMessage(clientSockets[i], resultsMessage);
+        }
+        else if (calculateScore(playerHands[i]) <= 21 && isDealerBusted)
+        {
+            resultsMessage.type = MessageType::GAME_OVER;
+            resultsMessage.data = 1;
+            sendMessage(clientSockets[i], resultsMessage);
+        }
+        else if (dealerScore > calculateScore(playerHands[i]) &&
+                 !isDealerBusted)
+        {
+            resultsMessage.type = MessageType::GAME_OVER;
+            resultsMessage.data = -1;
+            sendMessage(clientSockets[i], resultsMessage);
+        }
+
+        else if (calculateScore(playerHands[i]) == dealerScore &&
+                 !isDealerBusted && calculateScore(playerHands[i]) < 21)
+        {
+            resultsMessage.type = MessageType::GAME_OVER;
+            resultsMessage.data = 0;
+            sendMessage(clientSockets[i], resultsMessage);
+        }
     }
 }
 

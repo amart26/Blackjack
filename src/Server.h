@@ -19,6 +19,9 @@ struct Server
     int playerCount;
     int maxPlayers = 4;
     int dealerScore = 0;
+    int playerScore = 0;
+
+    bool isDealerBusted = false;
 
     void startServer(int port);
     void acceptPlayers();
@@ -29,6 +32,8 @@ struct Server
     void nextPlayerTurn();
 
     void runDealerTurn();
+
+    void calculatePayouts();
 };
 
 void handlePlayer(SocketType socket, int playerId);
