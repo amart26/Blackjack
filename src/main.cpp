@@ -90,7 +90,7 @@ int main()
             float mouseY = event.button.y;
 
             if (mouseX >= 300 && mouseX <= 380 && mouseY >= 500 &&
-                mouseY <= 540)
+                mouseY <= 540 && gameState != GameState::GAME_OVER)
             {
                 std::cout << "HIT!\n";
                 dealCard(deck, playerHand);
@@ -112,7 +112,7 @@ int main()
             }
 
             if (mouseX >= 420 && mouseX <= 500 && mouseY >= 500 &&
-                mouseY <= 540)
+                mouseY <= 540 && gameState != GameState::GAME_OVER)
             {
                 std::cout << "STAND!, DEALERS TURN!\n";
                 gameState = GameState::DEALER_TURN;
