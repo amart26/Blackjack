@@ -15,10 +15,13 @@ A 2D Blackjack game built with C++ and SDL3, developed as a portfolio project to
 - Full 52 card deck with Fisher-Yates shuffle
 - Blackjack scoring with proper Ace logic (1 or 11)
 - Dealer AI following standard casino rules (hits on 16, stands on 17)
-- Game state machine managing player turn, dealer turn, and game over
+- Hidden dealer card that reveals when the dealer's turn begins
+- Game state machine managing betting, player turn, dealer turn, and game over
+- Professional 1920x1080 casino table background
 - SDL3 2D rendering with sprite sheet card graphics
+- Redesigned button bar with centered HIT and STAND buttons
 - Live player and dealer score display
-- Clickable Hit, Stand, and Play Again buttons
+- Play Again button to reset and start a new round
 - Bust and Blackjack detection
 - Clean multi-file architecture separating game logic from rendering
 
@@ -49,10 +52,14 @@ Blackjack/
 │   ├── fonts/
 │   │   └── OpenSans.ttf
 │   └── images/
+│       ├── table.png
 │       ├── Hearts.png
 │       ├── Diamonds.png
 │       ├── Clubs.png
-│       └── Spades.png
+│       ├── Spades.png
+│       └── CardBack.png
+├── screenshots/
+│   └── gameplay.png
 ├── .clang-format
 ├── .gitignore
 └── README.md
@@ -107,10 +114,17 @@ g++ src/main.cpp src/Card.cpp src/Renderer.cpp -o blackjack -I/opt/homebrew/opt/
 - Sprite sheet rendering with source rectangles
 - Multi-file C++ project structure
 - Cross-platform development
+- Default function parameters for backwards compatibility
 
 ## Roadmap
 
-- [ ] Chip and betting system
+- [x] Core Blackjack game logic
+- [x] SDL3 window and rendering
+- [x] Sprite sheet card graphics
+- [x] Hidden dealer card reveal
+- [x] Professional casino table background
+- [x] Redesigned button bar
+- [ ] Chip and betting system with drag and drop
 - [ ] Win/loss message on screen
 - [ ] Sound effects
 - [ ] macOS release
