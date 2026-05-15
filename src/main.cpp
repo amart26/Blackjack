@@ -194,7 +194,6 @@ int main()
         SDL_RenderFillRect(renderer, &buttonBarRect);
 
         // RENDER CHIPS
-
         for (int i = 0; i < chips.size(); i++)
         {
             isHovered = isMouseOverChip(chips[i], mouseX, mouseY);
@@ -273,6 +272,8 @@ int main()
                                 draggedChipRow};
             renderChip(renderer, chipsTexture, draggedChip);
         }
+        std::string playerScoreText = "Player ScoreL: " + playerScore;
+        renderText(renderer, font, playerScoreText, 100, 1000, white);
 
         SDL_RenderPresent(renderer);
 
