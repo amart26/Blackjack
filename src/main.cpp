@@ -1,4 +1,5 @@
 #include "Betting.h"
+#include "MainMenu.h"
 #include "Renderer.h"
 #include "shared/Card.h"
 #include "shared/GameState.h"
@@ -17,6 +18,12 @@ int main()
     int screenHeight = 1080;
 
     // BUTTONS
+    std::vector<MainMenuButton> mainMenuButtons = {{710, 400, 500, 100, 0},
+                                                   {710, 500, 500, 100, 1},
+                                                   {710, 600, 500, 100, 2},
+                                                   {710, 700, 500, 100, 3}};
+
+    bool isMainMenuButtonHover;
     int buttonWidth = 120;
     int buttonHeight = 50;
     int buttonGap = 10;
@@ -67,7 +74,7 @@ int main()
     std::vector<Chip> betChips = {};
 
     // GAME STATE
-    GameState gameState = GameState::BETTING;
+    GameState gameState = GameState::MAIN_MENU;
 
     // PLAYER & DEALER STATE
     int playerScore = 0;
@@ -120,6 +127,28 @@ int main()
     shuffleDeck(deck);
 
     // LOADING ASSETS
+    SDL_Texture* mainMenuTexture =
+        IMG_LoadTexture(renderer, "assets/images/main_menu_background.png");
+    if (mainMenuTexture == nullptr)
+    {
+        SDL_Log("Failed to load main menu text: %s", SDL_GetError());
+    }
+
+    SDL_Texture* mainMenuButtonsNormalTexture =
+        IMG_LoadTexture(renderer, "assets/images/main_menu_buttons_normal.png");
+    if (mainMenuButtonsNormalTexture == nullptr)
+    {
+        SDL_Log("Failed to load menu button normal texture: %s",
+                SDL_GetError());
+    }
+
+    SDL_Texture* mainMenuButtonsOutlinedTexture =
+        IMG_LoadTexture(renderer, "assets/images/main_menu_buttons_hover.png");
+    if (mainMenuButtonsOutlinedTexture == nullptr)
+    {
+        SDL_Log("Failed to load main menu button hover: %s", SDL_GetError());
+    }
+
     SDL_Texture* tableTexture =
         IMG_LoadTexture(renderer, "assets/images/table.png");
     if (tableTexture == nullptr)
@@ -131,7 +160,7 @@ int main()
         IMG_LoadTexture(renderer, "assets/images/CardBack.png");
     if (cardBackTexture == nullptr)
     {
-        SDL_Log("Failed to load tables: %s", SDL_GetError());
+        SDL_Log("Failed to load card back texture: %s", SDL_GetError());
     }
 
     SDL_Texture* heartsTexture =
@@ -188,94 +217,121 @@ int main()
         SDL_SetRenderDrawColorFloat(renderer, 0.13f, 0.33f, 0.13f, 1.0f);
         SDL_RenderClear(renderer);
 
-        SDL_FRect tableRect = {0, 0, 1920, 1080};
-        SDL_RenderTexture(renderer, tableTexture, nullptr, &tableRect);
-
-        SDL_FRect buttonBarRect = {0, 1000, 1920, 80};
-        SDL_SetRenderDrawColor(renderer, 14, 17, 17, 255);
-        SDL_RenderFillRect(renderer, &buttonBarRect);
-
-        // RENDER CHIPS
-        for (int i = 0; i < chips.size(); i++)
+        if (gameState == GameState::MAIN_MENU)
         {
-            isHovered = isMouseOverChip(chips[i], mouseX, mouseY);
-            if (!isHovered)
+            SDL_FRect mainMenuBGRect = {0, 0, 1920, 1080};
+            SDL_RenderTexture(renderer, mainMenuTexture, nullptr,
+                              &mainMenuBGRect);
+
+            for (int i = 0; i < mainMenuButtons.size(); i++)
             {
-                renderChip(renderer, chipsTexture, chips[i]);
+                isMainMenuButtonHover =
+                    isMainMenuButtonHovered(mainMenuButtons[i], mouseX, mouseY);
+                if (!isMainMenuButtonHover)
+                {
+                    renderMainMenuButton(renderer, mainMenuButtonsNormalTexture,
+                                         mainMenuButtons[i]);
+                }
+                else if (isMainMenuButtonHover)
+                {
+                    renderMainMenuButton(renderer,
+                                         mainMenuButtonsOutlinedTexture,
+                                         mainMenuButtons[i]);
+                }
             }
-            else if (isHovered)
+        }
+
+        if (gameState != GameState::MAIN_MENU)
+        {
+            SDL_FRect tableRect = {0, 0, 1920, 1080};
+            SDL_RenderTexture(renderer, tableTexture, nullptr, &tableRect);
+
+            SDL_FRect buttonBarRect = {0, 1000, 1920, 80};
+            SDL_SetRenderDrawColor(renderer, 14, 17, 17, 255);
+            SDL_RenderFillRect(renderer, &buttonBarRect);
+
+            // RENDER CHIPS
+            for (int i = 0; i < chips.size(); i++)
             {
-                renderChip(renderer, chipsOutlinedTexture, chips[i]);
+                isHovered = isMouseOverChip(chips[i], mouseX, mouseY);
+                if (!isHovered)
+                {
+                    renderChip(renderer, chipsTexture, chips[i]);
+                }
+                else if (isHovered)
+                {
+                    renderChip(renderer, chipsOutlinedTexture, chips[i]);
+                }
             }
-        }
 
-        for (int i = 0; i < betChips.size(); i++)
-        {
-            renderChip(renderer, chipsTexture, betChips[i]);
-        }
+            for (int i = 0; i < betChips.size(); i++)
+            {
+                renderChip(renderer, chipsTexture, betChips[i]);
+            }
 
-        // DEAL BUTTON
-        if (gameState == GameState::BETTING)
-        {
-            renderButton(renderer, dealButtonX, dealButtonY, buttonWidth,
-                         buttonHeight, gold, dealButtonText, font, black);
-        }
+            // DEAL BUTTON
+            if (gameState == GameState::BETTING)
+            {
+                renderButton(renderer, dealButtonX, dealButtonY, buttonWidth,
+                             buttonHeight, gold, dealButtonText, font, black);
+            }
 
-        // HIT BUTTON
+            // HIT BUTTON
 
-        renderButton(renderer, hitButtonX, hitButtonY, buttonWidth,
-                     buttonHeight, green, hitButtonText, font, black);
+            renderButton(renderer, hitButtonX, hitButtonY, buttonWidth,
+                         buttonHeight, green, hitButtonText, font, black);
 
-        // STAND BUTTON
+            // STAND BUTTON
 
-        renderButton(renderer, standButtonX, standButtonY, buttonWidth,
-                     buttonHeight, red, standButtonText, font, black);
+            renderButton(renderer, standButtonX, standButtonY, buttonWidth,
+                         buttonHeight, red, standButtonText, font, black);
 
-        // PLAY AGAIN BUTTON
+            // PLAY AGAIN BUTTON
 
-        if (gameState == GameState::GAME_OVER)
-        {
+            if (gameState == GameState::GAME_OVER)
+            {
 
-            renderButton(renderer, playAgainButtonX, playerAgainButtonY,
-                         buttonWidth, buttonHeight, red, playAgainButtonText,
-                         smallFont, black);
-        }
+                renderButton(renderer, playAgainButtonX, playerAgainButtonY,
+                             buttonWidth, buttonHeight, red,
+                             playAgainButtonText, smallFont, black);
+            }
 
-        // RENDER PLAYER CARD
-        renderHand(renderer, playerHand, 175, 805, 1.0, heartsTexture,
-                   clubsTexture, spadesTexture, diamondsTexture,
-                   cardBackTexture, isCardHidden);
-
-        // RENDER DEALER CARDS
-        if (gameState != GameState::DEALER_TURN &&
-            gameState != GameState::GAME_OVER)
-        {
-            renderHand(renderer, dealerHand, 714, 227, 0.8, heartsTexture,
-                       clubsTexture, spadesTexture, diamondsTexture,
-                       cardBackTexture, !isCardHidden);
-        }
-        else
-        {
-            renderHand(renderer, dealerHand, 714, 227, 0.8, heartsTexture,
+            // RENDER PLAYER CARD
+            renderHand(renderer, playerHand, 175, 805, 1.0, heartsTexture,
                        clubsTexture, spadesTexture, diamondsTexture,
                        cardBackTexture, isCardHidden);
-        }
 
-        if (isDragging)
-        {
-            dragX = mouseX;
-            dragY = mouseY;
-            Chip draggedChip = {dragChipValue,
-                                dragX - chipWidth / 2,
-                                dragY - chipHeight / 2,
-                                chipWidth,
-                                chipHeight,
-                                draggedChipCol,
-                                draggedChipRow};
-            renderChip(renderer, chipsTexture, draggedChip);
+            // RENDER DEALER CARDS
+            if (gameState != GameState::DEALER_TURN &&
+                gameState != GameState::GAME_OVER)
+            {
+                renderHand(renderer, dealerHand, 714, 227, 0.8, heartsTexture,
+                           clubsTexture, spadesTexture, diamondsTexture,
+                           cardBackTexture, !isCardHidden);
+            }
+            else
+            {
+                renderHand(renderer, dealerHand, 714, 227, 0.8, heartsTexture,
+                           clubsTexture, spadesTexture, diamondsTexture,
+                           cardBackTexture, isCardHidden);
+            }
+
+            if (isDragging)
+            {
+                dragX = mouseX;
+                dragY = mouseY;
+                Chip draggedChip = {dragChipValue,
+                                    dragX - chipWidth / 2,
+                                    dragY - chipHeight / 2,
+                                    chipWidth,
+                                    chipHeight,
+                                    draggedChipCol,
+                                    draggedChipRow};
+                renderChip(renderer, chipsTexture, draggedChip);
+            }
+            playerChipsText = "Player Chips: " + std::to_string(playerChips);
+            renderText(renderer, font, playerChipsText, 100, 1025, white);
         }
-        playerChipsText = "Player Chips: " + std::to_string(playerChips);
-        renderText(renderer, font, playerChipsText, 100, 1025, white);
 
         SDL_RenderPresent(renderer);
 
