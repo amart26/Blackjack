@@ -23,6 +23,17 @@ int main()
                                                    {710, 600, 500, 100, 2},
                                                    {710, 700, 500, 100, 3}};
 
+    std::vector<MainMenuButton> lobbyButtons = {
+        {710, 400, 500, 100, 0},
+        {710, 500, 500, 100, 1},
+    };
+
+    std::vector<MainMenuButton> joinLobbyButtons = {
+        {710, 400, 500, 100, 0},
+        {710, 500, 500, 100, 1},
+        {710, 600, 500, 100, 2},
+    };
+
     bool isMainMenuButtonHover;
     int buttonWidth = 120;
     int buttonHeight = 50;
@@ -149,6 +160,37 @@ int main()
         SDL_Log("Failed to load main menu button hover: %s", SDL_GetError());
     }
 
+    SDL_Texture* lobbyButtonNormalTexture =
+        IMG_LoadTexture(renderer, "assets/images/lobby_button_normal.png");
+    if (lobbyButtonNormalTexture == nullptr)
+    {
+        SDL_Log("Failed to load lobby button normal texture: %s",
+                SDL_GetError());
+    }
+
+    SDL_Texture* lobbyButtonOutlinedTexture =
+        IMG_LoadTexture(renderer, "assets/images/lobby_button_hover.png");
+    if (lobbyButtonOutlinedTexture == nullptr)
+    {
+        SDL_Log("Failed to load lobby button outlined texture: %s",
+                SDL_GetError());
+    }
+
+    SDL_Texture* joinLobbyButtonNormalTexture =
+        IMG_LoadTexture(renderer, "assets/images/join_button_normal.png");
+    if (joinLobbyButtonNormalTexture == nullptr)
+    {
+        SDL_Log("Failed to load lobby button normal texture: %s",
+                SDL_GetError());
+    }
+    SDL_Texture* joinLobbyButtonOutlinedTexture =
+        IMG_LoadTexture(renderer, "assets/images/join_button_hover.png");
+    if (joinLobbyButtonOutlinedTexture == nullptr)
+    {
+        SDL_Log("Failed to load lobby button normal texture: %s",
+                SDL_GetError());
+    }
+
     SDL_Texture* tableTexture =
         IMG_LoadTexture(renderer, "assets/images/table.png");
     if (tableTexture == nullptr)
@@ -217,6 +259,7 @@ int main()
         SDL_SetRenderDrawColorFloat(renderer, 0.13f, 0.33f, 0.13f, 1.0f);
         SDL_RenderClear(renderer);
 
+        // MAIN MENU RENDER
         if (gameState == GameState::MAIN_MENU)
         {
             SDL_FRect mainMenuBGRect = {0, 0, 1920, 1080};
@@ -241,8 +284,72 @@ int main()
             }
         }
 
-        if (gameState != GameState::MAIN_MENU)
+        // MULIPLAYER LOBBY
+        if (gameState == GameState::MUTLIPLAYER_LOBBY)
         {
+            SDL_FRect mainMenuBGRect = {0, 0, 1920, 1080};
+            SDL_RenderTexture(renderer, mainMenuTexture, nullptr,
+                              &mainMenuBGRect);
+
+            for (int i = 0; i < lobbyButtons.size(); i++)
+            {
+                isMainMenuButtonHover =
+                    isMainMenuButtonHovered(lobbyButtons[i], mouseX, mouseY);
+                {
+                    if (!isMainMenuButtonHover)
+                    {
+                        std::cout
+                            << "lobbyButtons size: " << lobbyButtons.size()
+                            << "\n";
+                        renderMainMenuButton(renderer, lobbyButtonNormalTexture,
+                                             lobbyButtons[i]);
+                    }
+                    else if (isMainMenuButtonHover)
+                    {
+                        std::cout
+                            << "lobbyButtons size: " << lobbyButtons.size()
+                            << "\n";
+                        renderMainMenuButton(renderer,
+                                             lobbyButtonOutlinedTexture,
+                                             lobbyButtons[i]);
+                    }
+                }
+            }
+        }
+
+        // JOIN LOBBY
+        if (gameState == GameState::JOIN_LOBBY)
+        {
+            SDL_FRect mainMenuBGRect = {0, 0, 1920, 1080};
+            SDL_RenderTexture(renderer, mainMenuTexture, nullptr,
+                              &mainMenuBGRect);
+            for (int i = 0; i < joinLobbyButtons.size(); i++)
+            {
+                std::cout << "passed lobby loop\n";
+                isMainMenuButtonHover = isMainMenuButtonHovered(
+                    joinLobbyButtons[i], mouseX, mouseY);
+
+                if (!isMainMenuButtonHover)
+                {
+                    renderMainMenuButton(renderer, joinLobbyButtonNormalTexture,
+                                         joinLobbyButtons[i]);
+                }
+                else if (isMainMenuButtonHover)
+                {
+                    renderMainMenuButton(renderer,
+                                         joinLobbyButtonOutlinedTexture,
+                                         joinLobbyButtons[i]);
+                }
+            }
+        }
+
+        // RENDER GAME
+
+        if (gameState != GameState::MAIN_MENU &&
+            gameState != GameState::MUTLIPLAYER_LOBBY &&
+            gameState != GameState::JOIN_LOBBY)
+        {
+            std::cout << "gameState: " << (int)gameState << "\n";
             SDL_FRect tableRect = {0, 0, 1920, 1080};
             SDL_RenderTexture(renderer, tableTexture, nullptr, &tableRect);
 
@@ -251,8 +358,10 @@ int main()
             SDL_RenderFillRect(renderer, &buttonBarRect);
 
             // RENDER CHIPS
+            std::cout << "entering chips loop\n";
             for (int i = 0; i < chips.size(); i++)
             {
+                std::cout << "chip i = " << i << "\n";
                 isHovered = isMouseOverChip(chips[i], mouseX, mouseY);
                 if (!isHovered)
                 {
@@ -344,6 +453,84 @@ int main()
 
         if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
         {
+            std::cout << "click detected\n";
+            // MAIN MENU CLICK DECTECTION
+            for (int i = 0; i < mainMenuButtons.size(); i++)
+            {
+
+                isMainMenuButtonHover =
+                    isMainMenuButtonHovered(mainMenuButtons[i], mouseX, mouseY);
+                if (isMainMenuButtonHover &&
+                    gameState == GameState::MAIN_MENU &&
+                    mainMenuButtons[i].row == 0)
+                {
+                    gameState = GameState::BETTING;
+                }
+                else if (isMainMenuButtonHover &&
+                         gameState == GameState::MAIN_MENU &&
+                         mainMenuButtons[i].row == 1)
+                {
+
+                    gameState = GameState::MUTLIPLAYER_LOBBY;
+                }
+                else if (isMainMenuButtonHover &&
+                         gameState == GameState::MAIN_MENU &&
+                         mainMenuButtons[i].row == 2)
+                {
+                    // how to play
+                }
+                else if (isMainMenuButtonHover &&
+                         gameState == GameState::MAIN_MENU &&
+                         mainMenuButtons[i].row == 3)
+                {
+                    // settings
+                }
+            }
+
+            // MULTIPLAYER LOBBY CLICK DETECTION
+            for (int i = 0; i < lobbyButtons.size(); i++)
+            {
+                isMainMenuButtonHover =
+                    isMainMenuButtonHovered(lobbyButtons[i], mouseX, mouseY);
+                if (isMainMenuButtonHover &&
+                    gameState == GameState::MUTLIPLAYER_LOBBY &&
+                    lobbyButtons[i].row == 0)
+                {
+                    // host game
+                }
+                else if (isMainMenuButtonHover &&
+                         gameState == GameState::MUTLIPLAYER_LOBBY &&
+                         lobbyButtons[i].row == 1)
+                {
+                    // game state = joinlobby;
+                    gameState = GameState::JOIN_LOBBY;
+                }
+            }
+
+            // JOIN LOBBY CLICK DETECT
+            for (int i = 0; i < joinLobbyButtons.size(); i++)
+            {
+                isMainMenuButtonHover = isMainMenuButtonHovered(
+                    joinLobbyButtons[i], mouseX, mouseY);
+                if (isMainMenuButtonHover &&
+                    gameState == GameState::JOIN_LOBBY &&
+                    joinLobbyButtons[i].row == 0)
+                {
+                    // host game
+                }
+                else if (isMainMenuButtonHover &&
+                         gameState == GameState::JOIN_LOBBY &&
+                         joinLobbyButtons[i].row == 1)
+                {
+                    // game state = joinlobby;
+                }
+                else if (isMainMenuButtonHover &&
+                         gameState == GameState::JOIN_LOBBY &&
+                         joinLobbyButtons[i].row == 2)
+                {
+                    gameState = GameState::MUTLIPLAYER_LOBBY;
+                }
+            }
 
             // BETTING CHIPS
             for (int i = 0; i < chips.size(); i++)

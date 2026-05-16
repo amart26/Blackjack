@@ -34,6 +34,6 @@ struct Server
     void runDealerTurn();
 
     void calculatePayouts();
-};
 
-void handlePlayer(SocketType socket, int playerId);
+    void handlePlayer(SocketType socket, int playerId);
+};

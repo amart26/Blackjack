@@ -9,4 +9,5 @@ int main()
     server.startServer(7777);
     std::cout << "Waiting for connection...\n";
     server.acceptPlayers();
+    server.startBettingPhase();
 }

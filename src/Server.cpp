@@ -33,7 +33,8 @@ void Server::acceptPlayers()
 
         std::cout << "Player connected! Total Players: " << playerCount << "\n";
 
-        std::thread playerThread(handlePlayer, newSocket, playerCount - 1);
+        std::thread playerThread(&Server::handlePlayer, this, newSocket,
+                                 playerCount - 1);
         playerThread.detach();
     }
 }
@@ -184,7 +185,7 @@ void Server::calculatePayouts()
     }
 }
 
-void handlePlayer(SocketType socket, int playerId)
+void Server::handlePlayer(SocketType socket, int playerId)
 {
     while (true)
     {
@@ -192,19 +193,30 @@ void handlePlayer(SocketType socket, int playerId)
         switch (message.type)
         {
         case MessageType::HIT:
+            dealCard(deck, playerHands[playerId]);
+            if (calculateScore(playerHands[playerId]) > 21)
+            {
+                message.type = MessageType::PLAYER_BUST;
+                std::cout << "Player " + std::to_string(playerId) << "busted!";
+                sendMessage(socket, message);
+                nextPlayerTurn();
+            }
             std::cout << "Player wants to hit.\n";
             break;
         case MessageType::STAND:
+            nextPlayerTurn();
             std::cout << "Player wants to stand.\n";
             break;
         case MessageType::BET:
+            playerBets[playerId] = message.data;
             std::cout << "Player wants to bet. " << message.data << "\n";
             break;
         case MessageType::DEAL:
+            startGamePhase();
             std::cout << "Player wants to deal.\n";
             break;
         default:
-            std::cout << "unkown message";
+            std::cout << "unknown message";
             break;
         }
     }
