@@ -1,6 +1,8 @@
 #include "Betting.h"
+#include "Client.h"
 #include "MainMenu.h"
 #include "Renderer.h"
+#include "Server.h"
 #include "shared/Card.h"
 #include "shared/GameState.h"
 #include "shared/protocol.h"
@@ -106,6 +108,10 @@ int main()
     bool isCardHidden = false;
     bool isDragging = false;
     bool isHovered;
+
+    // NETWORKING
+    std::string ipAddress = "";
+    Client client;
 
     // COLORS
     SDL_Color green = {170, 255, 0, SDL_ALPHA_OPAQUE};
@@ -320,12 +326,14 @@ int main()
         // JOIN LOBBY
         if (gameState == GameState::JOIN_LOBBY)
         {
+            SDL_StartTextInput(window);
             SDL_FRect mainMenuBGRect = {0, 0, 1920, 1080};
             SDL_RenderTexture(renderer, mainMenuTexture, nullptr,
                               &mainMenuBGRect);
+
+            renderText(renderer, font, ipAddress, 800, 800, white);
             for (int i = 0; i < joinLobbyButtons.size(); i++)
             {
-                std::cout << "passed lobby loop\n";
                 isMainMenuButtonHover = isMainMenuButtonHovered(
                     joinLobbyButtons[i], mouseX, mouseY);
 
@@ -343,11 +351,22 @@ int main()
             }
         }
 
+        if (gameState == GameState::WAITING_LOBBY)
+        {
+            SDL_FRect mainMenuBGRect = {0, 0, 1920, 1080};
+            SDL_RenderTexture(renderer, mainMenuTexture, nullptr,
+                              &mainMenuBGRect);
+            renderText(renderer, font, "WAITING FOR PLAYERS..",
+                       (float)screenWidth / 2 - 150, (float)screenHeight / 2,
+                       white);
+        }
+
         // RENDER GAME
 
         if (gameState != GameState::MAIN_MENU &&
             gameState != GameState::MUTLIPLAYER_LOBBY &&
-            gameState != GameState::JOIN_LOBBY)
+            gameState != GameState::JOIN_LOBBY &&
+            gameState != GameState::WAITING_LOBBY)
         {
             std::cout << "gameState: " << (int)gameState << "\n";
             SDL_FRect tableRect = {0, 0, 1920, 1080};
@@ -358,10 +377,8 @@ int main()
             SDL_RenderFillRect(renderer, &buttonBarRect);
 
             // RENDER CHIPS
-            std::cout << "entering chips loop\n";
             for (int i = 0; i < chips.size(); i++)
             {
-                std::cout << "chip i = " << i << "\n";
                 isHovered = isMouseOverChip(chips[i], mouseX, mouseY);
                 if (!isHovered)
                 {
@@ -445,6 +462,21 @@ int main()
         SDL_RenderPresent(renderer);
 
         // EVENT HANDLING
+        if (event.type == SDL_EVENT_TEXT_INPUT)
+        {
+            if (gameState == GameState::JOIN_LOBBY)
+            {
+                ipAddress.append(event.text.text);
+            }
+        }
+
+        if (event.type == SDL_EVENT_KEY_DOWN)
+        {
+            if (event.key.key == SDLK_BACKSPACE && ipAddress.size() > 0)
+            {
+                ipAddress.pop_back();
+            }
+        }
 
         if (event.type == SDL_EVENT_QUIT)
         {
@@ -453,7 +485,6 @@ int main()
 
         if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
         {
-            std::cout << "click detected\n";
             // MAIN MENU CLICK DECTECTION
             for (int i = 0; i < mainMenuButtons.size(); i++)
             {
@@ -522,13 +553,21 @@ int main()
                          gameState == GameState::JOIN_LOBBY &&
                          joinLobbyButtons[i].row == 1)
                 {
-                    // game state = joinlobby;
+                    if (!ipAddress.empty())
+                    {
+                        client.connectToServer(ipAddress, 7777);
+                        std::thread clientThread(&Client::listenForMessages,
+                                                 &client);
+                        clientThread.detach();
+                        gameState = GameState::WAITING_LOBBY;
+                    }
                 }
                 else if (isMainMenuButtonHover &&
                          gameState == GameState::JOIN_LOBBY &&
                          joinLobbyButtons[i].row == 2)
                 {
                     gameState = GameState::MUTLIPLAYER_LOBBY;
+                    SDL_StopTextInput(window);
                 }
             }
 
