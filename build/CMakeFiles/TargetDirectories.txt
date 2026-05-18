@@ -1,0 +1,4 @@
+C:/Users/amart/OneDrive/Documents/Coding/BlackJack/build/CMakeFiles/blackjack.dir
+C:/Users/amart/OneDrive/Documents/Coding/BlackJack/build/CMakeFiles/serverTest.dir
+C:/Users/amart/OneDrive/Documents/Coding/BlackJack/build/CMakeFiles/edit_cache.dir
+C:/Users/amart/OneDrive/Documents/Coding/BlackJack/build/CMakeFiles/rebuild_cache.dir

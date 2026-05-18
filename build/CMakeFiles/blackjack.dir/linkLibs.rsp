@@ -1,0 +1,1 @@
+  -L"C:/SDL3/x86_64-w64-mingw32/lib"  -L"C:/SDL3_ttf/x86_64-w64-mingw32/lib"  -L"C:/SDL3_image/x86_64-w64-mingw32/lib"  -lSDL3 -lSDL3_ttf -lSDL3_image -lws2_32 -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 
